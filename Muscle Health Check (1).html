@@ -1,0 +1,171 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Muscle Health Check</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one centered column. Inputs (baseline vs now) on top, two gauges + verdict below. Palette taken from the team's presentation. */
+:root{
+  --bg:#F2F5FA; --card:#FFFFFF; --fg:#14233F; --muted:#5B6B85; --line:#DCE3EF;
+  --navy:#15305C; --orange:#F28C28;
+  --green:#2E9E5B; --yellow:#E8B307; --red:#D64545;
+  --green-soft:#E3F4EA; --yellow-soft:#FCF3D2; --red-soft:#FBE4E4;
+  --font:'Cairo','Segoe UI',system-ui,sans-serif; --num:'Space Grotesk','Cairo',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1730; --card:#13264A; --fg:#E8EEF9; --muted:#9FB0CE; --line:#25406E;
+  --green-soft:#12362A; --yellow-soft:#3A3010; --red-soft:#3D1A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1730; --card:#13264A; --fg:#E8EEF9; --muted:#9FB0CE; --line:#25406E;
+  --green-soft:#12362A; --yellow-soft:#3A3010; --red-soft:#3D1A22; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);margin:0;
+  padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:760px;margin:0 auto;display:grid;gap:18px}
+header{background:var(--navy);color:#fff;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:28px max(16px,env(safe-area-inset-left,0px)) 26px;border-bottom:5px solid var(--orange)}
+header .in{max-width:760px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+h1{margin:0 0 4px;font-size:clamp(1.5rem,5vw,2.1rem);font-weight:800;text-wrap:balance}
+header p{margin:0;color:#DCE6F5;font-size:.95rem;max-width:48ch}
+#lang{background:transparent;color:#fff;border:1px solid #ffffff66;border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer;flex:none}
+#lang:hover{background:#ffffff1f}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+h2{margin:0 0 14px;font-size:1.05rem;font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+label{display:grid;gap:6px;font-size:.88rem;color:var(--muted);font-weight:600;min-width:0}
+input[type=number]{font:600 1.15rem var(--num);color:var(--fg);background:var(--bg);border:1.5px solid var(--line);
+  border-radius:10px;padding:10px 12px;width:100%;direction:ltr;text-align:start}
+input[type=number]:focus{border-color:var(--orange)}
+.sec{grid-column:1/-1;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);font-weight:800;
+  border-bottom:1px solid var(--line);padding-bottom:4px;margin-top:4px}
+:root[data-theme="dark"] .sec{color:var(--orange)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .sec{color:var(--orange)}}
+.check{display:flex;align-items:center;gap:10px;grid-column:1/-1;color:var(--fg);font-weight:600}
+.check input{width:20px;height:20px;accent-color:var(--red)}
+.hint{grid-column:1/-1;margin:0;font-size:.82rem;color:var(--muted)}
+.verdict{border-radius:14px;padding:22px;border:2px solid var(--c);background:var(--soft);display:grid;gap:6px}
+.verdict .tag{display:inline-block;justify-self:start;background:var(--c);color:#fff;font-weight:800;border-radius:999px;padding:3px 16px}
+.verdict.yellow .tag{color:#2a2000}
+.verdict h3{margin:0;font-size:1.3rem}
+.verdict p{margin:0;line-height:1.7}
+.reasons{margin:6px 0 0;padding-inline-start:20px;color:var(--muted);font-size:.9rem}
+.gauges{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.gauges{grid-template-columns:1fr}}
+.g{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+.g .name{font-weight:700;color:var(--muted);font-size:.9rem}
+.g .pct{font:700 3rem/1.1 var(--num);color:var(--c);direction:ltr;text-align:start;margin:4px 0 2px}
+.g .sub{font-size:.85rem;color:var(--muted);direction:ltr;text-align:start}
+.bar{position:relative;height:14px;border-radius:7px;margin:18px 0 6px;direction:ltr;
+  background:linear-gradient(90deg,var(--red) 0 58.33%,var(--yellow) 58.33% 75%,var(--green) 75% 100%)}
+.mark{position:absolute;top:-6px;width:4px;height:26px;background:var(--fg);border-radius:2px;transform:translateX(-50%);transition:left .4s}
+.scale{display:flex;justify-content:space-between;font:.72rem var(--num);color:var(--muted);direction:ltr}
+.legend{display:grid;gap:8px;font-size:.88rem}
+.legend div{display:flex;gap:10px;align-items:center}
+.dot{width:14px;height:14px;border-radius:50%;flex:none}
+small.src{color:var(--muted);line-height:1.6}
+@media(prefers-reduced-motion:reduce){.mark{transition:none}}
+</style>
+
+<header><div class="in">
+  <div><h1 data-i="title"></h1><p data-i="sub"></p></div>
+  <button id="lang" type="button">EN</button>
+</div></header>
+
+<main class="wrap">
+  <section class="card">
+    <h2 data-i="enter"></h2>
+    <div class="grid">
+      <div class="sec" data-i="grip"></div>
+      <label><span data-i="gripB"></span><input id="gb" type="number" inputmode="decimal" min="0" step="0.1" value="45"></label>
+      <label><span data-i="gripN"></span><input id="gn" type="number" inputmode="decimal" min="0" step="0.1" value="41"></label>
+      <label><span data-i="gripP"></span><input id="gp" type="number" inputmode="decimal" min="0" step="0.1" placeholder="—"></label>
+      <div class="sec" data-i="emg"></div>
+      <label><span data-i="emgB"></span><input id="eb" type="number" inputmode="decimal" min="0" step="0.01" value="1.20"></label>
+      <label><span data-i="emgN"></span><input id="en" type="number" inputmode="decimal" min="0" step="0.01" value="1.10"></label>
+      <label class="check"><input id="fat" type="checkbox"><span data-i="fatigue"></span></label>
+      <p class="hint" data-i="hint"></p>
+    </div>
+  </section>
+
+  <section id="out" class="wrap" aria-live="polite"></section>
+
+  <section class="card">
+    <h2 data-i="key"></h2>
+    <div class="legend">
+      <div><span class="dot" style="background:var(--green)"></span><span data-i="kG"></span></div>
+      <div><span class="dot" style="background:var(--yellow)"></span><span data-i="kY"></span></div>
+      <div><span class="dot" style="background:var(--red)"></span><span data-i="kR"></span></div>
+    </div>
+    <p><small class="src" data-i="src"></small></p>
+  </section>
+</main>
+
+<script>
+const T={
+ar:{title:"فحص صحة عضلات رواد الفضاء",sub:"أدخل قراءة الـ Baseline (قبل الإقلاع) وقراءة الاختبار الحالي (بعد) وهيطلعلك النسبة واللون والتوصية.",
+ enter:"أدخل القراءات",grip:"قوة القبضة Handgrip (كجم)",gripB:"قبل (Baseline)",gripN:"بعد (الاختبار الحالي)",gripP:"قراءة الأسبوع السابق (اختياري)",
+ emg:"إشارة العضلة EMG",emgB:"قبل (Baseline)",emgN:"بعد (الاختبار الحالي)",fatigue:"الـ EMG أظهر إجهاد مبكر (Early fatigue)",
+ hint:"كل رائد فضاء بيتقارن بنفسه مش بحد تاني. قراءة الأسبوع السابق بتستخدم للكشف عن الهبوط السريع (أكتر من 5 نقاط).",
+ gripT:"قوة القبضة",emgT:"إشارة EMG",of:"من الـ Baseline",
+ G:"أخضر",Y:"أصفر",R:"أحمر",
+ gt:"مستقر",yt:"في تراجع",rt:"إنذار",
+ gd:"استمر على خطة التمرين الحالية، سجّل النتيجة، وأعد الاختبار الأسبوع الجاي.",
+ yd:"زوّد وقت التمرين أو المقاومة، راجع النوم والتغذية، وأعد الاختبار بعد أسبوع.",
+ rd:"التمرين مش كفاية. بلّغ جراح الطيران (flight surgeon) عشان يراجع البيانات ويقرر علاج إضافي أو عودة مبكرة للأرض.",
+ rBelow:"أقل من 85% من الـ Baseline",rFast:"هبوط سريع عن الأسبوع السابق",rFat:"EMG أظهر إجهاد مبكر",
+ nasa:"تحت 80% من الـ Baseline: أقل من حد NASA-STD-3001 الأدنى.",
+ bad:"أدخل قيم Baseline أكبر من صفر.",
+ kG:"أخضر: 95% أو أكتر من الـ Baseline. مستقر.",kY:"أصفر: من 85% إلى 95%. في تراجع.",kR:"أحمر: أقل من 85%، أو هبوط سريع، أو EMG أظهر إجهاد مبكر.",
+ src:"المصدر: NASA-STD-3001 Vol. 1 بتطلب قوة عضلية 80% أو أكتر من الـ Baseline. نسبتي 95% و85% هوامش إنذار مبكر.",dir:"rtl"},
+en:{title:"Muscle Health Check for Astronauts",sub:"Enter the baseline (before launch) and the current test (after). You get the percentage, the color and the recommendation.",
+ enter:"Enter readings",grip:"Handgrip force (kg)",gripB:"Before (baseline)",gripN:"After (current test)",gripP:"Last week's reading (optional)",
+ emg:"EMG muscle signal",emgB:"Before (baseline)",emgN:"After (current test)",fatigue:"EMG shows early fatigue",
+ hint:"Each astronaut is compared with themselves, not with others. Last week's reading is used to detect a fast drop (more than 5 points).",
+ gripT:"Grip strength",emgT:"EMG signal",of:"of baseline",
+ G:"Green",Y:"Yellow",R:"Red",gt:"Stable",yt:"Declining",rt:"Alert",
+ gd:"Keep the current exercise plan, log the result, and retest next week.",
+ yd:"Add exercise time or resistance, check sleep and nutrition, and retest in one week.",
+ rd:"Exercise is not enough. Alert the flight surgeon, who reviews the data and decides on extra treatment or an early return to Earth.",
+ rBelow:"Below 85% of baseline",rFast:"Falling fast since last week",rFat:"EMG shows early fatigue",
+ nasa:"Below 80% of baseline: under the NASA-STD-3001 minimum.",
+ bad:"Enter baseline values greater than zero.",
+ kG:"Green: 95% or more of baseline. Stable.",kY:"Yellow: 85–95% of baseline. Declining.",kR:"Red: below 85%, or falling fast, or EMG shows early fatigue.",
+ src:"Source: NASA-STD-3001 Vol. 1 requires muscle strength at or above 80% of baseline. 95% and 85% are early-warning margins.",dir:"ltr"}};
+let L="en";
+const $=id=>document.getElementById(id);
+const lvl=p=>p>=95?0:p>=85?1:2;
+const names=["green","yellow","red"], css=["--green","--yellow","--red"], soft=["--green-soft","--yellow-soft","--red-soft"];
+function pos(p){return Math.max(0,Math.min(100,(p-50)/60*100))} // scale 50%..110%
+function gauge(name,p,b,n,unit,c){
+  return `<div class="g" style="--c:var(${css[c]})"><div class="name">${name}</div>
+  <div class="pct">${p.toFixed(1)}%</div><div class="sub">${n}${unit} / ${b}${unit} ${T[L].of}</div>
+  <div class="bar"><div class="mark" style="left:${pos(p)}%"></div></div>
+  <div class="scale"><span>50</span><span>85</span><span>95</span><span>110%</span></div></div>`}
+function calc(){
+  const t=T[L], gb=+$("gb").value, gn=+$("gn").value, gp=$("gp").value===""?null:+$("gp").value, eb=+$("eb").value, en=+$("en").value;
+  const out=$("out");
+  if(!(gb>0)||!(eb>0)||$("gn").value===""||$("en").value===""){out.innerHTML=`<div class="card">${t.bad}</div>`;return}
+  const gP=gn/gb*100, eP=en/eb*100, prevP=gp!==null?gp/gb*100:null;
+  const fast=prevP!==null&&prevP-gP>5, fat=$("fat").checked;
+  let c=Math.max(lvl(gP),lvl(eP)); const why=[];
+  if(lvl(gP)===2||lvl(eP)===2)why.push(t.rBelow);
+  if(fast){c=2;why.push(t.rFast)} if(fat){c=2;why.push(t.rFat)}
+  if(Math.min(gP,eP)<80)why.push(t.nasa);
+  const cls=names[c], titles=[t.gt,t.yt,t.rt], desc=[t.gd,t.yd,t.rd];
+  out.innerHTML=`<div class="verdict ${cls}" style="--c:var(${css[c]});--soft:var(${soft[c]})">
+    <span class="tag">${[t.G,t.Y,t.R][c]}</span><h3>${titles[c]}</h3><p>${desc[c]}</p>
+    ${why.length?`<ul class="reasons">${why.map(w=>`<li>${w}</li>`).join("")}</ul>`:""}</div>
+    <div class="gauges">${gauge(t.gripT,gP,gb,gn," kg",lvl(gP))}${gauge(t.emgT,eP,eb,en,"",lvl(eP))}</div>`;
+}
+function applyLang(){
+  const t=T[L]; document.documentElement.lang=L; document.documentElement.dir=t.dir;
+  document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t[e.dataset.i]);
+  $("lang").textContent=L==="ar"?"EN":"عربي"; calc();
+}
+$("lang").onclick=()=>{L=L==="ar"?"en":"ar";applyLang()};
+document.querySelectorAll("input").forEach(i=>i.addEventListener("input",calc));
+applyLang();
+</script>
+
+</body></html>
